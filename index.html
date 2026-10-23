@@ -107,7 +107,7 @@ html,body{width:100%;min-width:0;overflow-x:hidden}
     <button type="button" class="modebtn" id="modePet">🐾 寵物模式<small>寵物變裝秀專屬造型</small></button><button type="button" class="modebtn" id="modeMixed">👤🐾 合照模式<small>雙主體各自換裝</small></button>
   </div>
   <div class="chips" id="tabs"></div>
-  <div class="cards" id="cards"></div><div id="mixedOptions" class="hidden"><div class="mixgrid"><div><label for="mixedHumanCategory">人物造型分類</label><select id="mixedHumanCategory"></select><label for="mixedHumanLook">人物造型</label><select id="mixedHumanLook"></select></div><div><label for="mixedPetLook">寵物造型</label><select id="mixedPetLook"></select><div class="smallnote">兩位主體各自保留身分與外觀特徵。</div></div></div></div>
+  <div class="cards" id="cards"></div><div id="mixedOptions" class="hidden"><div class="mixgrid"><div><label for="mixedHumanCategory">人物造型分類</label><select id="mixedHumanCategory"></select><label for="mixedHumanLook">人物造型</label><select id="mixedHumanLook"></select></div><div id="mixedPetLookWrap"><label for="mixedPetLook">寵物造型</label><select id="mixedPetLook"></select><div class="smallnote">兩位主體各自保留身分與外觀特徵。</div></div></div></div>
 </section>
 <section class="panel">
   <div class="sectiontitle">② 自訂細節</div>
@@ -117,6 +117,21 @@ html,body{width:100%;min-width:0;overflow-x:hidden}
       <div><label for="petName">寵物稱呼（選填）</label><input id="petName" placeholder="例如：豆豆"></div>
     </div>
     <div class="note">🐾 寵物專用鎖定：維持動物的真實物種、臉部、毛色／羽色、花紋、耳朵、尾巴、體型與原本姿勢；禁止擬人化人體、改品種、染毛或遮住辨識特徵。</div>
+  </div>
+  <div id="humanGroupFields">
+    <div class="grid2">
+      <div><label for="humanGroupType">人物張數／合照型態</label><select id="humanGroupType"><option value="single">單人</option><option value="couple">雙人合照</option><option value="group35">多人合照（3–5 人）</option><option value="group6">團體合照（6 人以上）</option></select></div>
+      <div><label for="humanRelation">人物關係／氛圍</label><select id="humanRelation"><option>依照片自動判斷</option><option>婚紗／伴侶</option><option>家庭合照</option><option>朋友／旅伴</option><option>同事／團隊</option><option>正式團體形象照</option></select></div>
+    </div>
+    <div class="note">👥 可切換單人、雙人或多人合照。婚紗通常可選雙人合照；旅遊照則可選多人或團體合照。</div>
+  </div>
+  <div id="mixedGroupFields" class="hidden">
+    <div class="grid2">
+      <div><label for="mixedHumanCount">人物數量</label><select id="mixedHumanCount"><option value="1">1 位人物</option><option value="2">2 位人物</option><option value="3-5">3–5 位人物</option><option value="6+">6 位以上人物</option></select></div>
+      <div><label for="mixedPetCount">寵物數量</label><select id="mixedPetCount"><option value="0">0 隻（純人物合照）</option><option value="1">1 隻寵物</option><option value="2">2 隻寵物</option><option value="3+">3 隻以上寵物</option></select></div>
+    </div>
+    <label for="mixedRelation">合照情境／關係</label><select id="mixedRelation"><option>依照片自動判斷</option><option>婚紗與寵物</option><option>家庭與寵物</option><option>朋友旅遊與寵物</option><option>團隊活動與寵物</option><option>寵物主題派對</option></select>
+    <div class="note">👤🐾 合照模式可同時容納多位人物與多隻寵物；所有人物共用一組人物造型，所有寵物共用一組寵物造型。</div>
   </div>
   <div class="grid2">
     <div><label for="ratio">畫面比例</label><select id="ratio"><option>9:16 直式全身構圖</option><option selected>3:4 直式人像</option><option>1:1 正方形構圖</option><option>16:9 橫式構圖</option></select></div>
@@ -169,8 +184,10 @@ function isPet(){return mode==='pet'}
 function isMixed(){return mode==='mixed'}
 function setMode(next){mode=next; category=Object.keys(currentData())[0]; selected=0; $('scene').value='';render(); generate();}
 function fillSelect(el,options){el.replaceChildren();options.forEach(x=>{let op=document.createElement('option');op.value=x;op.textContent=x;el.append(op)})}
-function renderMixedLooks(){const k=$('mixedHumanCategory').value;fillSelect($('mixedHumanLook'),humanData[k].map(x=>x[0]));fillSelect($('mixedPetLook'),petData['🐾 寵物變裝秀'].map(x=>x[0]));}
+function renderMixedLooks(){const k=$('mixedHumanCategory').value,oldHuman=$('mixedHumanLook').value,oldPet=$('mixedPetLook').value;fillSelect($('mixedHumanLook'),humanData[k].map(x=>x[0]));fillSelect($('mixedPetLook'),petData['🐾 寵物變裝秀'].map(x=>x[0]));if([...$('mixedHumanLook').options].some(o=>o.value===oldHuman))$('mixedHumanLook').value=oldHuman;if([...$('mixedPetLook').options].some(o=>o.value===oldPet))$('mixedPetLook').value=oldPet;}
 function renderScenes(){const prev=$('presetScene').value;fillSelect($('presetScene'),scenePresets[mode]);if(scenePresets[mode].includes(prev))$('presetScene').value=prev;}
+function groupText(v){return ({single:'單人',couple:'雙人合照',group35:'多人合照（3–5 人）',group6:'團體合照（6 人以上）'})[v]||'單人'}
+function mixedCountText(){return `${$('mixedHumanCount').value}人物＋${$('mixedPetCount').value}寵物`;}
 function render(){
   $('modeHuman').classList.toggle('active',mode==='human');
   $('modePet').classList.toggle('active',mode==='pet');
@@ -178,61 +195,138 @@ function render(){
   $('tabs').classList.toggle('hidden',isMixed());
   $('cards').classList.toggle('hidden',isMixed());
   $('mixedOptions').classList.toggle('hidden',!isMixed());
+  $('humanGroupFields').classList.toggle('hidden',!(mode==='human'));
+  $('mixedGroupFields').classList.toggle('hidden',!isMixed());
   if(isMixed()){fillSelect($('mixedHumanCategory'),Object.keys(humanData));renderMixedLooks();}
   renderScenes();
-  $('petFields').classList.toggle('hidden',!(isPet()||isMixed()));
-  $('poseLabel').textContent=isMixed()?'保留人物與寵物各自的姿勢、體型及相對位置':isPet()?'保留原始寵物姿勢、體型與四肢比例':'保留原始人物姿勢與身材比例';
+  const noPet=isMixed()&&$('mixedPetCount').value==='0';
+  $('mixedPetLookWrap').classList.toggle('hidden',noPet);
+  $('petFields').classList.toggle('hidden',!(isPet()||(isMixed()&&!noPet)));
+  $('poseLabel').textContent=isMixed()&&$('mixedPetCount').value==='0'?'保留所有人物各自姿勢、體型及相對位置':isMixed()?'保留人物與寵物各自的姿勢、體型及相對位置':isPet()?'保留原始寵物姿勢、體型與四肢比例':($('humanGroupType').value==='single'?'保留原始人物姿勢與身材比例':'保留各人物原始姿勢、身形及彼此位置關係');
   $('tabs').replaceChildren();
   Object.keys(currentData()).forEach(k=>{const b=document.createElement('button');b.type='button';b.className='chip'+(k===category?' active':'');b.textContent=k;b.onclick=()=>{category=k;selected=0;render();generate()};$('tabs').append(b)});
   $('cards').replaceChildren();
   currentData()[category].forEach(([name,clothes],i)=>{const b=document.createElement('button');b.type='button';b.className='option'+(i===selected?' active':'');const h=document.createElement('strong');const s=document.createElement('span');h.textContent=name;s.textContent=clothes.slice(0,24)+(clothes.length>24?'…':'');b.append(h,s);b.onclick=()=>{selected=i;render();generate()};$('cards').append(b)});
   const totalCats=Object.keys(currentData()).length;
   const totalLooks=Object.values(currentData()).reduce((sum,arr)=>sum+arr.length,0);
-  $('count').textContent=isMixed()?'人物＋寵物雙造型':(mode==='human'?'人物':'寵物')+'模式 · '+totalCats+' 類 / '+totalLooks+' 款';
+  $('count').textContent=isMixed()&&$('mixedPetCount').value==='0'?'純人物多人合照模式':isMixed()?'人物＋寵物合照模式 · 支援多人／多寵':(mode==='human'?'人物':'寵物')+'模式 · '+totalCats+' 類 / '+totalLooks+' 款';
 }
 function generate(){
   const [name,clothes,defaultScene]=currentData()[category][selected];
-  const pet=isPet(),mixed=isMixed();
+  const pet=isPet(),mixed=isMixed(),human=(mode==='human');
+  const noPet=mixed&&$('mixedPetCount').value==='0';
+  const humanGroup=$('humanGroupType').value;
+  const humanRelation=$('humanRelation').value;
+  const mixedHumanCount=$('mixedHumanCount').value;
+  const mixedPetCount=$('mixedPetCount').value;
+  const mixedRelation=$('mixedRelation').value;
   const modeVal=$('colorMode').value;
   const hex=$('colorPicker').value.toUpperCase();
   const color=modeVal==='original'?'':(modeVal==='custom'?`自訂色 ${hex}`:modeVal);
   $('colorDescription').textContent=color?'目前主色：'+color:'目前使用原款配色';
   $('colorPreview').style.backgroundColor=color?(modeVal==='custom'?hex:palette[modeVal]):'transparent';
   const colorRule=color
-   ?`【同款服裝自訂顏色｜優先於預設配色】\n將本款服裝的主要布料或外層主色改為${color}，即使款式描述包含其他預設主色也以此顏色為準。保留款式、版型、材質、刺繡與配件，只換服裝主色；${mixed?'不得修改人物膚色、髮色，以及寵物毛色、羽色、眼睛、皮膚、鼻頭及斑紋。':pet?'絕不修改寵物本身的毛色、羽色、眼睛顏色、皮膚、肉墊、鼻頭與原有花紋。':'絕不改變人物的膚色、髮色、眼睛、背景或光線。'}安全識別元素與金屬件原色盡量保留。\n\n`
-   :'【服裝顏色】\n沿用所選款式的原始配色，不額外改色。\n\n';
+   ?`【同款服裝自訂顏色｜優先於預設配色】
+將本款服裝的主要布料或外層主色改為${color}，即使款式描述包含其他預設主色也以此顏色為準。保留款式、版型、材質、刺繡與配件，只換服裝主色；${mixed&&!noPet?'不得修改人物膚色、髮色，以及寵物毛色、羽色、眼睛、皮膚、鼻頭及斑紋。':pet?'絕不修改寵物本身的毛色、羽色、眼睛顏色、皮膚、肉墊、鼻頭與原有花紋。':'絕不改變人物的膚色、髮色、眼睛、背景或光線。'}安全識別元素與金屬件原色盡量保留。
+
+`
+   :`【服裝顏色】
+沿用所選款式的原始配色，不額外改色。
+
+`;
   const sceneValue=$('scene').value.trim()||($('presetScene').value==='依造型預設'?'':$('presetScene').value);
-  const bg=$('keepScene').checked?'完整保留原始照片背景，不更動場景。':'背景設定：'+(sceneValue||(mixed?'溫馨人物與寵物合照攝影棚':defaultScene))+'。';
+  const bg=$('keepScene').checked?'完整保留原始照片背景，不更動場景。':'背景設定：'+(sceneValue||(mixed&&!noPet?'溫馨人物與寵物合照攝影棚':defaultScene))+'。';
   const pose=$('keepPose').checked
-   ?(mixed?'保留人物與寵物各自的姿勢、體型、四肢與彼此原有位置關係。':pet?'完整保留原寵物原有站姿、坐姿或臥姿、頭部角度、四肢位置、尾巴、身體輪廓與比例。':'保留原人物的原始姿勢、身形、肩寬與身體比例。')
-   :(mixed?'容許自然的雙主體合照站位調整，不得破壞真實身體結構或主體身分。':pet?'可略微調整自然動物姿勢，但必須維持物種與真實解剖結構。':'保持自然人體比例，可依場景微調姿勢。');
+   ?(mixed&&!noPet?'保留所有人物與寵物各自的姿勢、體型、四肢與彼此原有位置關係。':mixed&&noPet?'保留每位人物的原有姿勢、身形及彼此相對位置，不改變人物數量。':pet?'完整保留原寵物原有站姿、坐姿或臥姿、頭部角度、四肢位置、尾巴、身體輪廓與比例。':humanGroup==='single'?'保留原人物的原始姿勢、身形、肩寬與身體比例。':'保留每位人物原始姿勢、身形、肩寬與彼此相對位置；若原始素材為多張獨立照片，請自然安排合照站位。')
+   :(mixed&&!noPet?'容許自然的多人與多寵合照站位調整，不得破壞真實身體結構或主體身分。':mixed&&noPet?'允許自然多人站位調整，確保每位人物清晰可辨識。':pet?'可略微調整自然動物姿勢，但必須維持物種與真實解剖結構。':humanGroup==='single'?'保持自然人體比例，可依場景微調姿勢。':'可依雙人或多人合照需求自然調整站位與互動，但不得破壞每位人物的真實比例與辨識度。');
   const extra=$('extra').value.trim();
   const humanLook=mixed?humanData[$('mixedHumanCategory').value].find(x=>x[0]===$('mixedHumanLook').value):null;
   const petLook=mixed?petData['🐾 寵物變裝秀'].find(x=>x[0]===$('mixedPetLook').value):null;
-  const mixedHead=mixed?`請以我上傳的照片作為唯一參考，製作高品質寫實「同一人物與同一寵物」的合照換裝。若上傳的是兩張獨立照片，請把兩位主體自然合成到同一場景；若上傳的是合照，維持兩者的原始相對位置。不得新增陌生人物或其他寵物。
+  const mixedHead=mixed?`請以我上傳的照片作為唯一參考，製作高品質寫實的「人物＋寵物」合照換裝。合照規模：${mixedHumanCount}位人物與${mixedPetCount}隻寵物。合照情境：${mixedRelation}。若上傳的是多位人物與多隻寵物的獨立照片，請自然合成到同一場景；若上傳的是原始合照，維持所有主體的原始相對位置。不得新增陌生人物或其他寵物。
 
 【人物身分鎖定｜最高優先】
-完整保留原人物眼睛、眉毛、鼻子、嘴巴、臉型、年齡、膚色、髮型、髮際線、表情及自然皮膚紋理，不得換臉、美顏或更改身材比例。
+完整保留每位原人物的眼睛、眉毛、鼻子、嘴巴、耳朵、臉型、年齡、膚色、髮型、髮際線、表情、身形比例與自然皮膚紋理，確保每位人物都仍可辨識，不得換臉、美顏或更改身材比例。
 
 【寵物身分鎖定｜最高優先】
 ${$('species').value==='auto'?'依原照辨識真實物種。':'寵物種類：'+$('species').value+'，照片特徵優先。'}
-保留寵物原有臉部、毛色／羽色、斑紋、耳朵、眼睛、尾巴、體型和真實四肢結構，禁止改品種、換成另一隻寵物或擬人化。
+保留每隻寵物原有臉部、毛色／羽色、斑紋、耳朵、眼睛、尾巴、體型和真實四肢結構，禁止改品種、換成另一隻寵物或擬人化。
 
 【人物換裝】
-${$('mixedHumanCategory').value}／${humanLook[0]}：${humanLook[1]}。
+所有人物採用主題：${$('mixedHumanCategory').value}／${humanLook[0]}。主要服裝設定：${humanLook[1]}。可依每位人物的性別、體型與角色自然調整版型與配件，但整體風格需一致。
 
 【寵物換裝】
-${petLook[0]}：${petLook[1]}。服裝應輕巧合身、不遮耳眼口鼻，不束縛肢體與尾巴。
+所有寵物採用主題：${petLook[0]}。主要服裝設定：${petLook[1]}。服裝應輕巧合身、不遮耳眼口鼻，不束縛肢體與尾巴。
 
 `:'';
-  const head=mixed?mixedHead:pet
-   ?`請以我上傳的寵物照片作為唯一寵物參考，對照片中的同一隻寵物進行高品質寫實變裝。\n\n【寵物身分與外觀鎖定｜最高優先】\n${$('species').value==='auto'?'依原照片辨識物種，不自行猜測或改變物種。':'寵物物種：'+$('species').value+'。若與照片不符，優先以照片真實物種為準。'}${$('petName').value.trim()?'\n寵物稱呼：'+$('petName').value.trim()+'（僅作識別，不加入文字浮水印）。':''}\n完全保留同一隻寵物的臉部特徵、眼睛、鼻頭、嘴型、鬍鬚、耳朵形狀、毛色／羽色、毛長、斑紋位置、尾巴形狀、身形、體態與年齡感。不得將貓變狗、改變品種、換成另一隻寵物、換臉、擬人化成人臉、刻意美顏或染毛。\n\n【寵物變裝主題】\n${name}\n在不改變寵物本體外觀的前提下，替牠穿戴：${clothes}。服飾應有真實材質、自然皺褶、合宜尺寸與正確光影，依原動物體型與姿勢調整，保留四肢活動範圍；帽子若遮住耳朵或眼睛則改成不遮擋的款式。服裝不得束縛脖頸、呼吸道或尾巴，不使用看似沉重、尖銳、危險或密閉的配件。\n\n`
-   :`請以我上傳的人物照片作為唯一人物參考，對同一位人物進行高品質寫實換裝。\n\n【人物五官與身分鎖定｜最高優先】\n保留原人物的眼睛、眉毛、鼻子、嘴巴、耳朵、臉型、五官比例、年齡、膚色、髮型、髮色、髮際線、表情及自然皮膚紋理。禁止換臉、磨皮美顏、瘦臉、放大眼睛或套用其他人的面孔。確保換裝前後仍可辨識為同一人。\n\n【換裝主題】\n${category}／${name}\n將原本服裝替換為：${clothes}。服裝應具備真實材質、自然皺褶、合身剪裁與正確光影。鞋子與配件搭配服裝主題。\n\n`;
-  const end=mixed?'不得改變人物五官、年齡、膚色、髮型及身形；不得改變寵物物種、品種、毛色、斑紋、耳尾、身形及真實解剖結構；不得生成多餘人物、寵物、肢體、手指，不得卡通化或過度修圖。優先使用局部遮罩僅編輯各自主體的服裝，人物臉部與寵物臉部、皮毛、耳尾排除在遮罩之外。':pet
-   ?'不得改變寵物品種、物種、臉型、毛色、羽色、花紋、眼色、耳朵、尾巴、肢體數目或四肢結構；不得生成其他陌生寵物、擬人化人類手腳、不自然肢體、穿模、卡通化或過度修圖。所有配件僅作視覺裝扮，不得妨礙動物呼吸與視線。\n\n如支援局部編輯／遮罩，僅修改服裝與配件區域；保護寵物臉部、眼睛、耳朵、皮毛／羽毛、四肢與尾巴，優先維持同一隻動物的真實辨識度。'
-   :'不得改變原人物五官、臉型、身分特徵、年齡與膚色；不得生成陌生人臉部；不得出現不自然手指、肢體變形、服裝穿模、卡通化或過度修圖。\n\n如果工具支援局部編輯或遮罩，請優先只修改服裝區域，將臉部與頭髮排除在編輯範圍之外，以提升人物一致性。';
-  $('output').value=head+colorRule+`【構圖與場景】\n${bg}\n${pose}\n畫面比例：${$('ratio').value}；攝影風格：${$('style').value}。完整呈現${mixed?'人物、寵物及其穿搭':pet?'寵物與穿搭':'服裝'}，清晰自然，具有真實攝影質感。\n`+(extra?'\n【額外要求】\n'+extra+'\n':'')+'\n【禁止事項】\n'+end;
-  $('status').textContent=mixed?'已產生人物＋寵物合照換裝指令':'已產生「'+name+'」'+(pet?'寵物':'人物')+'換裝指令';
+  const pureHumanHead=noPet?`請以我上傳的人物照片作為唯一人物參考，生成高品質寫實純人物合照換裝。指定人數：${mixedHumanCount} 位人物，完全不包含寵物或其他動物。合照情境：${mixedRelation}。若提供多張人物照片，請將同一批人物自然合成合照；若提供原始合照，保留全部現有成員及相對位置。人物數量應與指定人數及來源素材一致，不得自行生成陌生人。
+
+【多人身分鎖定｜最高優先】
+分別鎖定每位人物的眼睛、眉毛、鼻子、嘴巴、耳朵、臉型、五官比例、年齡、膚色、髮型、髮際線、表情、自然皮膚紋理與身形；每一位都要維持原本身分，不得換臉、美顏或混淆人物。
+
+【所有人物換裝】
+主題：${$('mixedHumanCategory').value}／${humanLook[0]}。服裝：${humanLook[1]}。每位人物依體型、角色自然搭配符合主題的服裝，整體風格協調，材質、縫線、皺褶與光影寫實。
+
+`:'';
+  const humanHead=humanGroup==='single'
+   ?`請以我上傳的人物照片作為唯一人物參考，對同一位人物進行高品質寫實換裝。
+
+【人物五官與身分鎖定｜最高優先】
+保留原人物的眼睛、眉毛、鼻子、嘴巴、耳朵、臉型、五官比例、年齡、膚色、髮型、髮色、髮際線、表情及自然皮膚紋理。禁止換臉、磨皮美顏、瘦臉、放大眼睛或套用其他人的面孔。確保換裝前後仍可辨識為同一人。
+
+【換裝主題】
+${category}／${name}
+將原本服裝替換為：${clothes}。服裝應具備真實材質、自然皺褶、合身剪裁與正確光影。鞋子與配件搭配服裝主題。
+
+`
+   :`請以我上傳的人物照片作為唯一人物參考，對同一組人物進行高品質寫實換裝合照。合照型態：${groupText(humanGroup)}。人物關係／氛圍：${humanRelation}。若上傳的是多人原始合照，請保留原本人物；若上傳的是多張獨立人物照片，請把這些同一批人物自然合成到同一畫面。不得新增陌生人。
+
+【人物五官與身分鎖定｜最高優先】
+完整保留每位原人物的眼睛、眉毛、鼻子、嘴巴、耳朵、臉型、五官比例、年齡、膚色、髮型、髮色、髮際線、表情、身材比例及自然皮膚紋理。禁止換臉、磨皮美顏、瘦臉、放大眼睛或套用其他人的面孔。確保換裝前後每位人物都仍可辨識為同一批人。
+
+【換裝主題】
+${category}／${name}
+將所有人物原本服裝替換為：${clothes}。服裝應具備真實材質、自然皺褶、合身剪裁與正確光影。所有人物皆使用同一主題風格，可依人物性別、體型、角色與站位自然調整版型與配件，但整體需協調一致。
+
+`;
+  const head=noPet?pureHumanHead:mixed?mixedHead:pet
+   ?`請以我上傳的寵物照片作為唯一寵物參考，對照片中的同一隻寵物進行高品質寫實變裝。
+
+【寵物身分與外觀鎖定｜最高優先】
+${$('species').value==='auto'?'依原照片辨識物種，不自行猜測或改變物種。':'寵物物種：'+$('species').value+'。若與照片不符，優先以照片真實物種為準。'}${$('petName').value.trim()?`\n寵物稱呼：${$('petName').value.trim()}（僅作識別，不加入文字浮水印）。`:''}
+完全保留同一隻寵物的臉部特徵、眼睛、鼻頭、嘴型、鬍鬚、耳朵形狀、毛色／羽色、毛長、斑紋位置、尾巴形狀、身形、體態與年齡感。不得將貓變狗、改變品種、換成另一隻寵物、換臉、擬人化成人臉、刻意美顏或染毛。
+
+【寵物變裝主題】
+${name}
+在不改變寵物本體外觀的前提下，替牠穿戴：${clothes}。服飾應有真實材質、自然皺褶、合宜尺寸與正確光影，依原動物體型與姿勢調整，保留四肢活動範圍；帽子若遮住耳朵或眼睛則改成不遮擋的款式。服裝不得束縛脖頸、呼吸道或尾巴，不使用看似沉重、尖銳、危險或密閉的配件。
+
+`
+   :humanHead;
+  const end=noPet?`不得增添寵物或任何動物，不得增加陌生人物或遺漏任何指定人物。不得改變任一位人物的臉部、年齡、膚色、髮型與身形，不得出現多餘肢體、手指、臉部融合、穿模或卡通化。若支援局部遮罩，僅編輯服裝，不編輯所有人物的臉部與頭髮。`
+   :mixed
+   ?`不得改變任一位人物的五官、年齡、膚色、髮型及身形；不得改變任一隻寵物的物種、品種、毛色、斑紋、耳尾、身形及真實解剖結構；不得生成多餘人物、寵物、肢體、手指，不得卡通化或過度修圖。優先使用局部遮罩僅編輯各自主體的服裝，人物臉部與寵物臉部、皮毛、耳尾排除在遮罩之外。`
+   :pet
+    ?`不得改變寵物品種、物種、臉型、毛色、羽色、花紋、眼色、耳朵、尾巴、肢體數目或四肢結構；不得生成其他陌生寵物、擬人化人類手腳、不自然肢體、穿模、卡通化或過度修圖。所有配件僅作視覺裝扮，不得妨礙動物呼吸與視線。
+
+如支援局部編輯／遮罩，僅修改服裝與配件區域；保護寵物臉部、眼睛、耳朵、皮毛／羽毛、四肢與尾巴，優先維持同一隻動物的真實辨識度。`
+    :(humanGroup==='single'
+      ?`不得改變原人物五官、臉型、身分特徵、年齡與膚色；不得生成陌生人臉部；不得出現不自然手指、肢體變形、服裝穿模、卡通化或過度修圖。
+
+如果工具支援局部編輯或遮罩，請優先只修改服裝區域，將臉部與頭髮排除在編輯範圍之外，以提升人物一致性。`
+      :`不得改變任一位原人物的五官、臉型、身分特徵、年齡與膚色；不得生成陌生人臉部；不得出現多餘人物、不自然手指、肢體變形、服裝穿模、卡通化或過度修圖。若為多人合照，每位人物都要清楚可辨識，避免遮擋、裁切或比例失衡。
+
+如果工具支援局部編輯或遮罩，請優先只修改服裝區域，將所有人物的臉部與頭髮排除在編輯範圍之外，以提升人物一致性。`);
+  const extraBlock=extra?`
+【額外要求】
+${extra}
+`:'';
+  $('output').value=head+colorRule+`【構圖與場景】
+${bg}
+${pose}
+畫面比例：${$('ratio').value}；攝影風格：${$('style').value}。完整呈現${mixed&&!noPet?'所有人物、寵物及其穿搭':noPet?'所有人物及其穿搭':pet?'寵物與穿搭':humanGroup==='single'?'服裝':'所有人物與服裝'}，清晰自然，具有真實攝影質感。
+`+extraBlock+`
+【禁止事項】
+${end}`;
+  $('status').textContent=noPet?'已產生純人物多人合照換裝指令':mixed?'已產生人物＋寵物多人合照換裝指令':pet?'已產生「'+name+'」寵物換裝指令':'已產生「'+name+'」'+(humanGroup==='single'?'人物換裝':'人物合照換裝')+'指令';
 }
 $('modeHuman').onclick=()=>setMode('human');
 $('modePet').onclick=()=>setMode('pet');
@@ -241,7 +335,7 @@ $('mixedHumanCategory').onchange=()=>{renderMixedLooks();generate()};
 $('mixedHumanLook').onchange=generate;
 $('mixedPetLook').onchange=generate;
 $('generate').onclick=generate;
-['ratio','style','scene','extra','keepScene','keepPose','colorMode','colorPicker','species','petName','presetScene'].forEach(id=>$(id).addEventListener('input',generate));
+['ratio','style','scene','extra','keepScene','keepPose','colorMode','colorPicker','species','petName','presetScene','humanRelation','mixedHumanCount','mixedRelation'].forEach(id=>$(id).addEventListener('input',generate));['humanGroupType','mixedPetCount'].forEach(id=>$(id).addEventListener('change',()=>{render();generate();}));
 $('copy').onclick=async()=>{try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText($('output').value)}else{$('output').focus();$('output').select();if(!document.execCommand('copy'))throw Error('copy')} $('status').textContent='✓ 已複製指令，可貼到 AI 圖片編輯工具'}catch(e){$('output').focus();$('output').select();$('status').textContent='請長按文字或按 Ctrl+C 手動複製'}};
 render();generate();
 </script>
